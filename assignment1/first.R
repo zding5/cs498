@@ -10,8 +10,8 @@ library('caret')
 # preparing data with 80% traing and 20% testing
 inTrain <- createDataPartition(dy, p=0.8, list=F)
 
-trainData = d[inTrain,]
-testData = d[-inTrain,]
+trainData <- d[inTrain,]
+testData <- d[-inTrain,]
 
 trainX <- trainData[,-c(9)]
 trainY <- trainData[,9]
@@ -42,19 +42,77 @@ perdictGaussian <- function(x, muP, muN, sigmaP, sigmaN){
 
 correctPercent <- function(x, y) sum(x==y)/length(x)
 
-correctness = array(dim=10)
+correctness1 <- array(dim=10)
 
+# problem1
 for (wi in 1:10){
-    inTrain <- createDataPartition(dy, p=0.8, list=F)
+    inTrain <- createDataPartition(y=dy, p=0.8, list=F)
 
-    trainData = d[inTrain,]
-    testData = d[-inTrain,]
-    trainX = trainData[,-c(9)]
-    trainY = trainData[,9]
-    testX = testData[,-c(9)]
-    testY = testData[,9]
+    trainData <- d[inTrain,]
+    testData <- d[-inTrain,]
+    trainX <- trainData[,-c(9)]
+    trainY <- trainData[,9]
+    testX <- testData[,-c(9)]
+    testY <- testData[,9]
 
-    list[meanP, meanN, sdP, sdN] = trainGaussian(trainX, trainY)
-    correctness = correctPercent(perdictGaussian(testX, meanP, meanN, sdP, sdN), testY)
+    list[meanP, meanN, sdP, sdN] <- trainGaussian(trainX, trainY)
+    correctness1[wi] <- correctPercent(perdictGaussian(testX, meanP, meanN, sdP, sdN), testY)
+}
+
+correctness2 <- array(dim=10)
+# problem2
+for (wi in 1:10){
+    inTrain <- createDataPartition(y=dy, p=0.8, list=F)
+
+    trainData <- d[inTrain,]
+    testData <- d[-inTrain,]
+    for (column in c(3,5,6,8)){
+        trainData[trainData[,column]==0, column] <- NA
+        testData[testData[,column]==0, column] <- NA
+    }
+    trainX <- trainData[,-c(9)]
+    trainY <- trainData[,9]
+    testX <- testData[,-c(9)]
+    testY <- testData[,9]
+
+    list[meanP, meanN, sdP, sdN] <- trainGaussian(trainX, trainY)
+    correctness2[wi] <- correctPercent(perdictGaussian(testX, meanP, meanN, sdP, sdN), testY)
+}
+
+#problem3
+library('klaR')
+
+correctness3 <- array(dim=10)
+for (wi in 1:10){
+
+    inTrain <- createDataPartition(y=dy, p=.8, list=F)
+    trainData <- d[inTrain,]
+    testData <- d[-inTrain,]
+    trainX <- trainData[,-c(9)]
+    trainY <- as.factor(trainData[, 9])
+    testX <- testData[,-c(9)]
+    testY <- as.factor(testData[,9])
+
+    model <- train(trainX, trainY, 'nb', trControl=trainControl(method='cv', number=10))
+    prediction <- predict(model, newdata=testX)
+    correctness3[wi] = correctPercent(prediction, testY)
+    # confusionMatrix(data=prediction, testY)
+}
+
+#problem4
+correctness4 <- array(dim=10)
+for (wi in 1:10){
+
+    inTrain <- createDataPartition(y=dy, p=.8, list=F)
+    trainData <- d[inTrain,]
+    testData <- d[-inTrain,]
+    trainX <- trainData[,-c(9)]
+    trainY <- trainData[, 9]
+    testX <- testData[,-c(9)]
+    testY <- testData[,9]
+
+    svm <- svmlight(trainX, trainY, pathsvm='./svm_light_osx.8.4_i7')
+    labels <- predict(svm, testX)
+    correctness4[wi] <- correctPercent(labels$class, testY)
 }
 

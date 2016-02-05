@@ -40,11 +40,9 @@ def get_dataset():
 
 def hinge_lost(testX, testY, a, b):
     """
-
     @type testX: numpy.array
     @type testY: numpy.array
     @type a: numpy.array
-
     """
     return numpy.max(testY*(1-testX*a+b), 0)
 
@@ -55,8 +53,8 @@ def update(a, b, x, y, e, l):
     b -= numpy.dot(y, errors)+b
 
 
-def training(trainX, trainY, iters=1000, l=1, interval=10,
-             plotter=None, testX=None, testY=None):
+def train(trainX, trainY, iters=1000, l=1, interval=10,
+          plotter=None, testX=None, testY=None):
     (m, n) = trainX.shape
     a = numpy.zeros(n)
     b = 0
@@ -75,3 +73,12 @@ def training(trainX, trainY, iters=1000, l=1, interval=10,
 
 def predict(testX, a, b):
     return numpy.sign(testX*a+b)
+
+
+if __name__ == "__main__":
+    dataX, dataY = get_dataset()
+    trainX = None
+    trainY = None
+    testX = None
+    testY = None
+    (a, b) = train(x, y)
